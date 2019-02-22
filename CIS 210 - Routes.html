@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0068)https://classes.cs.uoregon.edu/16F/cis210/assignments/W6-Routing.php -->
+<html class="gr__classes_cs_uoregon_edu"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!-- This is for the <head> section of CIS210 pages,
+     not for the page header in the <body> section. 
+   Include here metadata including css links, etc., 
+   but omit the <title> element which may be specific
+   to each page. 
+   Set $root before calling this.
+-->
+
+
+<meta name="description" content="CIS 210, Computer Science 1">
+<meta name="keywords" content="Computer science, CS1"> 
+<meta name="author" content="Michal Young"> 
+
+   <link rel="stylesheet" type="text/css" href="./CIS 210 - Routes_files/cis210.css" media="screen">
+   <link rel="stylesheet" type="text/css" href="./CIS 210 - Routes_files/cis210-print.css" media="print">
+
+<title>CIS 210 - Routes</title></head>
+
+<body data-gr-c-s-loaded="true">
+<div class="container">
+
+  <!-- pagehead.php: Page header to include on each page -->
+
+<div class="pageheader">
+   <div class="title">
+   <h1>CIS 210, Fall 2016<br> Introduction to Computer Science</h1>
+   </div> <!-- title -->
+   </div> <!-- pageheader -->
+<!-- end pagehead.php -->
+  <!-- sidebar.php:  Sidebar to be replicated on each page 
+     Note links must be relative to site URL-->
+<div class="sidenav">
+   <h1>Main Menu</h1>
+   <ul>
+   <li><a href="https://classes.cs.uoregon.edu/16F/cis210/index.php">Class home page</a></li>
+   <li><a href="https://piazza.com/uoregon/fall2016/cis210/home">Piazza</a></li>
+   <li><a href="https://classes.cs.uoregon.edu/16F/cis210/hints.php">How to Succeed</a></li>
+   <li><a href="https://classes.cs.uoregon.edu/16F/cis210/schedule.php">Schedule</a></li>
+   <li><a href="https://classes.cs.uoregon.edu/16F/cis210/assignments.php">Assignments</a></li>
+   <li><a href="https://classes.cs.uoregon.edu/16F/cis210/references.php">References</a></li>
+  <li><a href="https://classes.cs.uoregon.edu/16F/cis210/exams.php">Exams</a></li>
+<!--
+  <li><a href="/16F/cis210/assignments/Contest.php" >Contest</a></li>
+-->
+   </ul>
+</div>
+
+<div class="content">
+
+<div class="item">
+  <h1>Routing</h1>
+<p>This assignment is due at 5pm on Friday, November 4.  Use
+  Canvas to turn in routes.py</p>
+<h1>Purpose</h1>
+<p>
+  Like “set membership and string reversal,”, this project
+  involves recursion; you mainly have to carefully design and
+  implement just one recursive function.  
+</p>
+
+<h1>Pair Assignment</h1>
+  <p>You are encouraged to use <em>pair programming</em> to
+  complete this assignment.  You can share code with one other
+  classmate, who should be listed as an author in your program
+  docstring.  You may discuss general approach and design with other
+  students, without sharing code; cite them in your docstring
+  clearly distinguishing design discussion from code authorship.
+  </p>
+  <p>
+  The amount of actual programming required for this project is
+  small, but be sure you understand how the main program logic works.
+  
+</p>
+</div>
+
+
+<div class="item">
+<h1>How far to Barad Dur?</h1>
+<p>
+Suppose you are given a map of a particularly boring country in which
+  cities are named a,b,c,d,e,f, and g, with road distances in <a href="https://classes.cs.uoregon.edu/16F/cis210/assignments/W6-Routing.php#furlongs">furlongs</a> as follows:
+  </p>
+<img src="./CIS 210 - Routes_files/route-choices-problem.png">
+<p>Your program must determine the shortest possible distance between
+  two cities.  For example, if it is asked the difference between a
+  and g on the given map, it should determine that the shortest route
+  is 19 furlongs:
+  </p>
+  <img src="./CIS 210 - Routes_files/route-choices-solution.png">
+  
+ 
+  <h2>Requirements</h2>
+  <p>I have provided some code to get started.  You don't have to use it,
+  but if you do, the FIXME comments indicate places where you will need
+  to add or modify code. 
+  </p>
+ 
+ <p>Road map descriptions look like this:</p>
+ <code><pre>#
+# This sample map corresponds to the diagram above
+# 
+a,b,5
+a,c,8
+b,d,6
+c,d,2
+d,e,12
+d,f,2
+e,g,3
+f,g,7
+ </pre></code>
+
+<p>The input and output in the command or terminal window will look like this: </p>
+<code><pre>&gt; python3 routes.py a g sample-map.txt
+Distance from a to g is 19.0
+</pre></code>
+
+<p>
+ In case of a misspelled city, your program will report that it does
+ not appear on the map:
+  </p>
+<code><pre>&gt; python3 routes.py a x sample-map.txt
+Destination  x  is not on the map
+</pre></code>
+
+<p>It can also cope with cities that are present on the map, but with
+  no route between:
+  </p>
+<code><pre>&gt; python3 routes.py a x sample-map-noreach.txt
+You can't get from a to x
+</pre></code>
+
+
+</div>
+
+<div class="item">
+<h1>How to solve it</h1>
+  <h2>A strategy</h2>
+<p> There are several possible algorithms, but the one I suggest is a
+  simple depth-first search using a “single source shortest path”
+  approach. This approach finds the shortest distance from a single
+  source (the starting city) to <em>all</em> other reachable cities
+  using depth-first search.  Here is a step-by-step example for
+  finding the distance from city a to city g:
+  </p>
+
+  <p>We begin by noting that the distance from city a to city a is
+  zero furlongs.</p>
+  <img src="./CIS 210 - Routes_files/route-choices-initial.png">
+  <p>Then we calculate the distances of the neighbors of a.</p>
+  <img src="./CIS 210 - Routes_files/route-choices-step1.png">
+  <p>From each city, we make recursive calls to calculate the distance
+  of its neighboring cities.  Suppose the recursive call on city b
+  occurs next, so we calculate a distance of 5+6 = 11 for city d. 
+  </p>
+  <img src="./CIS 210 - Routes_files/route-choices-step2a.png">
+  <p>
+  Later, a recursive call from city c finds a shorter distance to d:
+  </p>
+  <img src="./CIS 210 - Routes_files/route-choices-step2b.png">
+  <p>When we find a shorter route to a city that has already been
+  visited, the new shorter distance becomes the new estimate.  Since
+  this could improve estimates of distance for other cities reachable
+  from the current city (e.g., any estimates of distancs to e, f, and
+  g that we have made using the estimate of 11 furlongs to city d), we
+  must again make the recursive calls from the city with the improved
+  estimate.</p>
+  <p>Using the improved estimate of 10 furlongs from a to d, we obtain
+  distances to e and f:
+  </p>
+  <img src="./CIS 210 - Routes_files/route-choices-step3.png">
+  <p>
+  Again we have two ways to reach city g. Suppose this time, just by
+  luck, we first explore the path going through f, and obtain an
+  estimate of 19 for g.
+  </p>
+  <img src="./CIS 210 - Routes_files/route-choices-step4a.png">
+  <p>
+  Later we explore the road from e to g. However, it produces a worse
+  estimate, 25 furlongs, so we keep the old estimate of 19 and do not
+  repeat exploration from city g.
+  </p>
+  <img src="./CIS 210 - Routes_files/route-choices-step4b.png">
+  <p>This algorithm is not guaranteed to be fast (in the worst case we
+  could make four different estimates of the distance to city g, and
+  with a more complicated road map we might explore every city many
+  times).  Better algorithms, which you will learn later if you
+  continue to take CIS courses, propagate distance
+  estimates in a similar way but may visit cities in an order
+  that differs from depth-first search.</p>
+
+   <h2>From strategy to code</h2>
+   <p>Expressing the above strategy in Python code depends a lot on
+   how the road map and the current estimates of distance are
+   represented.  The starter code represents the road map in a
+   variable <kbd>roads</kbd> as a
+   dictionary.  The sample map above would be represented this way:
+</p>
+<code><pre>{
+   'a': [('b', 5.0), ('c', 8.0)],
+   'c': [('a', 8.0), ('d', 2.0)],
+   'b': [('a', 5.0), ('d', 6.0)],
+   'e': [('d', 12.0), ('g', 3.0)],
+   'd':  [('b', 6.0), ('c', 2.0), ('e', 12.0), ('f', 2.0)],
+   'g': [('e', 3.0), ('f', 7.0)],
+   'f': [('d', 2.0), ('g', 7.0)]
+}
+</pre></code>
+<p>Consider for example if we inquire about roads from city a, that is
+ <kbd>roads["a"]<kbd>. We would obtain a list of connections and
+   distances in this form:</kbd></kbd></p>
+<code><pre>  [('b', 5.0), ('c', 8.0)]
+</pre></code>
+<p>The first element of this list is a tuple <kbd>('b', 5.0)</kbd>.  A
+   tuple can be “deconstructed”  (that is, separated into
+   its components) with a Python assignment statement to multiple
+   variables. For example, if we write<br>
+  <kbd>to_city, dist = ('b', 5.0)</kbd><br>
+  the value 'b' will be stored in <kbd>to_city</kbd> and the value 5.0
+   will be stored in <kbd>dist</kbd>.  Your textbook also explains the
+   Python tuple type.
+</p>
+
+<p>Note that each road is represented twice.  For example, the road
+   between a and b is represented as a road from a to b and as a road
+   from b to a, both with the same distance 5.0. </p>
+
+<p>In addition to the road map, your program will need to keep its
+current estimates of distance to each city.  This can easily be done
+using a Python dictionary structure, with city names as keys and
+estimated distances as values.  In the starter code, I have used the
+variable <kbd>distances</kbd> to store these estimates.  Note that if
+a city has not yet been visited, it will not appear in the distances
+dict.  If it is still not in the distances dict after exploring all
+cities reachable from the start city, there must not be any path from
+the start city to the destination.
+</p>
+
+<p>
+I've provided quite a bit of <a href="https://classes.cs.uoregon.edu/16F/cis210/assignments/base/routing/routes.py">starter code</a>
+with this project, so you
+can concentrate on function dfs.
+</p>
+
+<p>In addition to the starter code, I've provided a few road maps.
+<a href="https://classes.cs.uoregon.edu/16F/cis210/assignments/base/routing/ME-distances.txt">ME-distances.txt</a> is taken from a
+set of distance estimates found 
+online.  Distances in ME-distances.txt are in hours on horseback,
+rather than furlongs, but that doesn't matter.
+<a href="https://classes.cs.uoregon.edu/16F/cis210/assignments/base/routing/sample-map.txt">sample-map.txt</a> is the
+map used as an example above;
+<a href="https://classes.cs.uoregon.edu/16F/cis210/assignments/base/routing/sample-map-noreach.txt">sample-map-noreach.txt</a> is a variation
+that adds a pair of cities x and y that are not reachable from
+anywhere else.
+<a href="https://classes.cs.uoregon.edu/16F/cis210/assignments/base/routing/skip-map.txt">skip-map.txt</a> is a map in which the shortest paths are
+not the most direct paths.  This may be useful in testing your program
+to make sure it is finding the shortest distance rather than finding
+the route with the smallest number of steps.
+</p>
+
+<h2>Efficiency</h2>
+<p>In computer science and software development, we usually
+characterize the efficiency of an algorithm or program as a function
+of problem size, reasoning about the <em>worst possible</em> case. If
+you consider the depth first search in this regard, it is easy to
+construct a worst case that, for <em>n</em> cities and <em>2n</em>
+roads, explores <em>2<sup>n</sup></em> paths before it finally finds
+the shortest path.  (Convince yourself by constructing a map with 5
+cities that could take up to 32 steps.)  We say it the algorithm is <em>exponential</em> in
+the number of cities.  That's bad.</p>
+<p>There are much, much better algorithms, but they are a little more
+complicated.  If you have finished implementing the simple depth-first
+search, and would like to try implementing one of the more efficient
+algorithms, drop a note on Piazza and I'll provide some guidance on
+implementing a better search algorithm.
+</p>
+
+<p><em>
+<a name="furlongs">Aside</a>: Furlongs are an ancient measure of
+distance, used originally by the Roman Empire and based on how long a
+person could walk in an hour. In most of the world they have long ago
+been replaced by SI measures.  In the U.S. they are still a legal
+measure, although the length of a furlong varies slightly from state
+to state.  This is a crazy way to measure anything, but not much
+crazier than feet, inches, ounces, and miles.</em></p>
+
+ 
+</div> <!-- item -->
+
+  <div class="item">
+  <h1>Grading rubric</h1>
+  <table width="85%" border="0" cellpadding="2">
+    <tbody><tr>
+      <th colspan="2" scope="col">Functional correctness</th>
+      <th width="8%" scope="col">&nbsp;</th>
+      <th width="60%" scope="col">&nbsp;</th>
+      <th width="1%" scope="col">&nbsp;</th>
+      <th width="3%" scope="col">40</th>
+    </tr>
+    <tr>
+      <td width="5%">&nbsp;</td>
+      <td width="23%"><p>Exactly meets input/output spec</p>        </td>
+      <td>10</td>
+      <td>5 = minor discrepancy, 0 = ignored spec</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Correct calculations</td>
+      <td>30</td>
+      <td><p>30 = works for all cases, 20 = works for almost all cases
+      (including all of the provided examples), 
+      10 = works for most cases (e.g., all but one of the example maps), 
+      5 = works for some cases</p></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+   
+    <tr>
+      <th colspan="2">Other requirements</th>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>35</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td><p>Header docstring</p>        </td>
+      <td>5</td>
+      <td>5 = as specified, 3 = minor issue, e.g., as #comment, 0 = missing
+           or incomplete</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Function header docstrings</td>
+      <td>8</td>
+      <td>8 = good docstrings in all functions, 6 = minor problems, 
+      4 = incorrect or multiple missing, 0 = docstrings not provided</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Recursion</td>
+      <td>12</td>
+      <td><p>12 = Excellent use of recursion; recursive function is 
+      simple and clean; 8 = Correct use of recursion, but function
+      is unnecessarily complex (e.g., because a test is repeated 
+      before each recursive call, when it could be done once in 
+      the called function); 4 = Serious problems in organization
+      of the recursive function, or how it is called.</p></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>Program style and readability</td>
+      <td>10</td>
+      <td><p>10 Good variable names, indentation, etc --- 
+      very readable code, 8 = minor issues, such as inconsistent indentation, 
+      5 = major issues that interfere with readability of code, 
+      0 = unreadable mess </p></td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <th colspan="2">Total</th>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>75</td>
+    </tr>
+  </tbody></table>
+  <p>I can't anticipate all issues that may be encountered in grading, 
+  so points may be deducted for other issues not listed in the rubric. 
+   A program that does not compile and run (e.g., because of a syntax error) 
+  starts with 0 points for functional correctness, but the grader at his or her 
+  discretion may award some partial credit. </p>
+  <p>&nbsp;</p>
+  </div>
+</div> <!-- class content -->
+
+<!-- pagefoot.php: Page footing to include on each page -->
+<div class="clearer">  </div>
+   <div class="footer">
+
+   <span style="float: left">
+   Contact <a href="mailto:jsventek@uoregon.edu?subject=CIS%20210%20web%20site">webmaster</a>.
+   </span>
+   <span style="float: right">  Based loosely on Transparentia design by Arcsin, from OSWD.org. </span>
+      &nbsp; <!-- Space to put the two floats above.  Setting text justification does not seem to do it. -->
+   </div>
+<!-- Track our traffic ?? -->
+<!-- End pagefoot.php -->
+
+</div> <!-- class container -->
+
+
+
+
+</body><span class="gr__tooltip"><span class="gr__tooltip-content"></span><i class="gr__tooltip-logo"></i><span class="gr__triangle"></span></span></html>
